@@ -10,12 +10,7 @@ public class RSA implements CryptoSystem {
     private final BigInteger privateKey;
     private final BigInteger publicKey;
 
-    /**
-     * Constructor to initialize the RSA object with a name.
-     * Generates public and private keys.
-     *
-     * @param name the name of the RSA object (e.g., "Alice", "Bob")
-     */
+
     public RSA(String name) {
         this.name = name;
         Random random = new Random(System.currentTimeMillis());
@@ -23,6 +18,7 @@ public class RSA implements CryptoSystem {
         // Generate two distinct 32-bit prime numbers p and q
         BigInteger p = BigInteger.probablePrime(32, random);
         BigInteger q;
+        // Will continuously generate a 32-bit prime number until q doesnt equal to p
         do {
             q = BigInteger.probablePrime(32, random);
         } while (q.equals(p));
@@ -30,7 +26,7 @@ public class RSA implements CryptoSystem {
         BigInteger one = BigInteger.ONE;
         BigInteger phi = (p.subtract(one)).multiply(q.subtract(one));
 
-        // Generate a public key e such that 1 < e < phi and gcd(e, phi) == 1
+        // Generate a public key e such that e is coprime with phi and 1 < e < phi
         BigInteger e;
         do {
             e = BigInteger.probablePrime(16, random);
@@ -42,41 +38,33 @@ public class RSA implements CryptoSystem {
         System.out.println(name + " says: Hello world, my public key is N=" + n + " and e=" + publicKey);
     }
 
-    /**
-     * Gets the name of the RSA object.
-     *
-     * @return the name of the RSA object
-     */
+
     public String getName() {
         return this.name;
     }
 
-    /**
-     * Encrypts a message input by the user.
-     *
-     * @param input the Scanner object to read the user input
-     * @return the encrypted message as a list of BigInteger values
-     */
+    // Method to encrypt
     @Override
     public ArrayList<BigInteger> encrypt(Scanner input) {
         System.out.println(name + " says: ");
         String message = input.nextLine();
+        //The input is turned into bytes
         byte[] bytes = message.getBytes();
         ArrayList<BigInteger> encryptedMessage = new ArrayList<>();
+        //For every bytes will be encrypted by getting powered by the publickey and modulus n 
+        //and then will be added in the arraylist
         for (byte c : bytes)
             encryptedMessage.add(BigInteger.valueOf(c).modPow(publicKey, n));
         return encryptedMessage;
     }
 
-    /**
-     * Decrypts an encrypted message.
-     *
-     * @param encryptedMessage the encrypted message as a list of BigInteger values
-     * @return the decrypted message as a string
-     */
+    // Method to decrypt
     @Override
     public String decrypt(ArrayList<BigInteger> encryptedMessage) {
+        //Initialise a string builder
         StringBuilder result = new StringBuilder();
+        //For every encrypted character, it will be powered by the private key and modulus n
+        //then turned into an integer to extract the integer value to find the ASCII code
         for (BigInteger bigInteger : encryptedMessage)
             result.append((char) bigInteger.modPow(privateKey, n).intValue());
         return result.toString();
